@@ -3,8 +3,7 @@ import 'antd/dist/antd.css';
 import styles from "../../styles/dashboard.module.css";
 
 
-import { Layout, Button, Col, Row, Card, Form} from 'antd';
-import { IoAirplane } from '@ant-design/icons';
+import { Layout, Button, Col, Row, Card, Form, Modal } from 'antd';
 import axios from '../../utils/axios';
 import { useRouter } from 'next/dist/client/router';
 
@@ -13,14 +12,6 @@ const { Content } = Layout;
 export default function ListarVoos() {
     const [voos, setVoos] = useState([]);
     const router = useRouter();
-
-    const atualizarVoo = () => {
-        axios.get("/classes/Voo", {
-             
-        }).then(reponse => {
-            router.push("/dashboard");
-        })
-    }
 
     useEffect(() => {   
         axios
@@ -33,7 +24,24 @@ export default function ListarVoos() {
             setVoos(response.data.results);
             console.log(response.data.results);
           });
-      }, []);   
+      }, []); 
+
+      function success() {
+        Modal.success({
+          content: 'Compra realizada com sucesso!',
+          onOk() {
+            axios
+            .put(`classes/Voo/P2mcol0Jf5`, {
+              assentosDisponiveis: "15",
+              assentosOcupados: "30"
+            })
+            .then((response) => {
+              router.push("/");
+            });
+            
+          }       
+        });
+    }
 
     return(
         <Layout>
@@ -49,14 +57,14 @@ export default function ListarVoos() {
             <div>
             <Row gutter={16}>  {
                 voos.map((voo) => (<Col span={8}>
-                    <Card title="AAA" bordered={true}>
-                        <Form onFinish={atualizarVoo}>
+                    <Card title={voo.companhiaAerea.nome} bordered={true}>
+                        <Form>
                         <p><b>Origem: </b> {voo.origem}</p>
                         <p><b>Destino: </b> {voo.destino}</p>
                         <p><b>Preço: R$</b> {voo.precoVoo}</p>
                         <p><b>Assentos Disponíveis: </b> {voo.assentosDisponiveis}</p>
                         <p><b>Assentos Ocupados: </b> {voo.assentosOcupados}</p>
-                        <Button htmlType="submit" type="primary">Comprar</Button>
+                        <Button htmlType="submit" type="primary" onClick={success}>Comprar</Button>
                         </Form>
                     </Card>
                 </Col>))}   
